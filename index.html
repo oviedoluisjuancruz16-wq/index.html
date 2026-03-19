@@ -6,7 +6,6 @@
 
 <title>AdGen AI</title>
 
-<!-- MODO APP (sin barra safari) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#0f172a">
 
@@ -63,7 +62,6 @@ canvas {
     margin-top: 10px;
     background: black;
 }
-
 </style>
 </head>
 
@@ -102,7 +100,7 @@ canvas {
 </select>
 </div>
 
-<button onclick="generar()">🚀 Generar</button>
+<button onclick="generar()">🚀 Generar Video</button>
 
 <canvas id="canvas" width="300" height="500"></canvas>
 
@@ -114,23 +112,41 @@ let audio = document.getElementById("audio");
 
 document.getElementById("imageInput").onchange = e => {
     let file = e.target.files[0];
-    img.src = URL.createObjectURL(file);
-    document.getElementById("preview").src = img.src;
+    if (file) {
+        img.src = URL.createObjectURL(file);
+        document.getElementById("preview").src = img.src;
+    }
 };
 
 document.getElementById("audioInput").onchange = e => {
     let file = e.target.files[0];
-    audio.src = URL.createObjectURL(file);
+    if (file) {
+        audio.src = URL.createObjectURL(file);
+    }
 };
 
-function generarTextoIAFake() {
-    const textos = [
-        "🔥 No te lo pierdas",
-        "🚀 Oferta única",
-        "💥 Esto es increíble",
-        "✨ Probalo hoy"
-    ];
-    return textos[Math.floor(Math.random() * textos.length)];
+// 🔥 IA REAL
+async function generarTextoIA() {
+    try {
+        const res = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer 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",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                model: "gpt-4o-mini",
+                messages: [
+                    { role: "user", content: "crea un texto publicitario corto, llamativo y viral en español" }
+                ]
+            })
+        });
+
+        const data = await res.json();
+        return data.choices[0].message.content;
+    } catch (error) {
+        return "🔥 Oferta increíble";
+    }
 }
 
 function generar() {
@@ -140,29 +156,39 @@ function generar() {
     let duration = document.getElementById("duration").value;
     let mode = document.getElementById("mode").value;
 
+    if (!img.src) {
+        alert("Subí una imagen primero");
+        return;
+    }
+
+    audio.currentTime = 0;
     audio.play();
 
     let start = null;
 
-    function anim(t) {
-        if (!start) start = t;
-        let p = (t - start) / 1000;
+    generarTextoIA().then(texto => {
 
-        ctx.clearRect(0,0,300,500);
+        function anim(t) {
+            if (!start) start = t;
+            let p = (t - start) / 1000;
 
-        let scale = 1 + p * (mode === "viral" ? 0.1 : 0.05);
+            ctx.clearRect(0,0,300,500);
 
-        ctx.drawImage(img, -50*scale, -50*scale, 400*scale, 600*scale);
+            let scale = 1 + p * (mode === "viral" ? 0.1 : 0.05);
 
-        ctx.fillStyle = "white";
-        ctx.font = "22px Arial";
-        ctx.fillText(generarTextoIAFake(), 20, 450);
+            ctx.drawImage(img, -50*scale, -50*scale, 400*scale, 600*scale);
 
-        if (p < duration) requestAnimationFrame(anim);
-        else audio.pause();
-    }
+            ctx.fillStyle = "white";
+            ctx.font = mode === "viral" ? "bold 26px Arial" : "22px Arial";
+            ctx.fillText(texto, 20, 450);
 
-    requestAnimationFrame(anim);
+            if (p < duration) requestAnimationFrame(anim);
+            else audio.pause();
+        }
+
+        requestAnimationFrame(anim);
+
+    });
 }
 </script>
 
