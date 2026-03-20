@@ -113,25 +113,7 @@ let audio = document.getElementById("audio");
 document.getElementById("imageInput").onchange = e => {
     let file = e.target.files[0];
     if (file) {
-        img.src = URL.createObjectURL(file);
-        document.getElementById("preview").src = img.src;
-    }
-};
-
-document.getElementById("audioInput").onchange = e => {
-    let file = e.target.files[0];
-    if (file) {
-        audio.src = URL.createObjectURL(file);
-    }
-};
-
-// 🔥 IA REAL
-async function generarTextoIA() {
-    try {
-        const res = await fetch("https://api.openai.com/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Authorization": "Bearer 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",
+        img.src = URL.createObjectURL",
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
